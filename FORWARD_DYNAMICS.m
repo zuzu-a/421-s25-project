@@ -6,7 +6,6 @@
 %           fed into Simulink to give us the matrices for A, B, C, and D.
 %           We will be using LQR, and possibly tuning, to get our required
 %           tuning results.
-clear; clc;
 
 ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS                     = [0, 0, 6.2339, -9.5876, 292.43; 1, 3.7028, 28.6058, 88.9349, 71.1363];
 
@@ -17,7 +16,7 @@ ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS                     = [0, 0, 6.2339, -9.
 
 [A_fwd, B_fwd, C_fwd, D_fwd]    = tf2ss(ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(1,:), ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(2,:));
 Q_fwd                           = diag([1/(200^2), 1/(50^2), 1/(100^2), 1/(100^2)]);
-R_fwd                           = 0.01;
+R_fwd                           = 0.1;
 K_fwd                           = lqr(A_fwd, B_fwd, Q_fwd, R_fwd);
 
 %% 1.3 -    Integral feedback, augmented state-space, LQR
@@ -45,4 +44,4 @@ K_fwd_aug   = lqr(A_fwd_aug, B_fwd_aug, Q_fwd_aug, R_fwd);
 
 %% 1.4 -    Initial conditions
 %           Now we need to define initial conditions for our system.
-INIT_COND_fwd = [0, 100, 0, 0];
+INIT_COND_fwd = [0, 0, 100, 0, 0];
