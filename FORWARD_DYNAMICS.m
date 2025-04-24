@@ -6,18 +6,19 @@
 %           fed into Simulink to give us the matrices for A, B, C, and D.
 %           We will be using LQR, and possibly tuning, to get our required
 %           tuning results.
+clear; clc;
 
-ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS                     = [0, 0, 0, 3.6083; 1, 0.8229, 0.1394, 0];
+ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS                     = [0, 0, 6.2339, -9.5876, 292.43; 1, 3.7028, 28.6058, 88.9349, 71.1363];
 
 %% 1.2 -    Unaugmented matrix
 %           For clarity, we calculated the unaugmented matrix. However, we
 %           found that it wasn't tracking good enough for our LQR
 %           objective.
 
-[A_alt, B_alt, C_alt, D_alt]            = tf2ss(ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(1,:), ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(2,:));
-Q_alt = diag([1/(200^2), 1/(50^2), 1/(100^2)]);
-R_alt = 1/(1000^2);
-K_alt      = lqr(A_alt, B_alt, Q_alt, R_alt);
+[A_fwd, B_fwd, C_fwd, D_fwd]    = tf2ss(ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(1,:), ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(2,:));
+Q_fwd                           = diag([1/(200^2), 1/(50^2), 1/(100^2), 1/(100^2)]);
+R_fwd                           = 0.01;
+K_fwd                           = lqr(A_fwd, B_fwd, Q_fwd, R_fwd);
 
 %% 1.3 -    Integral feedback, augmented state-space, LQR
 %           We implemented an augmented state-space to complement our
@@ -25,17 +26,23 @@ K_alt      = lqr(A_alt, B_alt, Q_alt, R_alt);
 %           a cost function.
 
 % Augmented system matrices
-A_alt_aug   = [A_alt, zeros(size(A_alt,1),1); -C_alt, 0];  
-B_alt_aug   = [B_alt; 0];
-C_alt_aug   = [C_alt 0];
-D_alt_aug   = D_alt;
+A_fwd_aug   = [A_fwd, zeros(size(A_fwd,1),1); -C_fwd, 0];  
+B_fwd_aug   = [B_fwd; 0];
+C_fwd_aug   = [C_fwd 0];
+D_fwd_aug   = D_fwd;
 
 % Designing the Q matrix
-q1_alt      = 0.00001;
-q2_alt      = 1;
-q3_alt      = 5;
-q4_alt      = 15;
-Q_alt_aug   = diag([q1_alt, q2_alt, q3_alt, q4_alt]);
+q1_fwd      = 0.1;
+q2_fwd      = 1;
+q3_fwd      = 5;
+q4_fwd      = 5;
+q5_fwd      = 10;
+Q_fwd_aug   = diag([q1_fwd, q2_fwd, q3_fwd, q4_fwd, q5_fwd]);
 
 % Calculating our gains for our controller.
-K_alt_aug   = lqr(A_alt_aug, B_alt_aug, Q_alt_aug, R_alt);
+K_fwd_aug   = lqr(A_fwd_aug, B_fwd_aug, Q_fwd_aug, R_fwd);
+
+
+%% 1.4 -    Initial conditions
+%           Now we need to define initial conditions for our system.
+INIT_COND_fwd = [0, 100, 0, 0];

@@ -17,7 +17,7 @@ ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS                     = [0, 0, 0, 0.1257; 
 
 [A_rot, B_rot, C_rot, D_rot]            = tf2ss(ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(1,:), ALTITUDE_TRANSFER_FUNCTION_COEFFICIENTS(2,:));
 Q_rot = diag([1/(200^2), 1/(50^2), 1/(100^2)]);
-R_rot = 1/(5^2);
+R_rot = 1/(1000^2);
 K_rot      = lqr(A_rot, B_rot, Q_rot, R_rot);
 
 %% 2.3 -    Integral feedback, augmented state-space, LQR
@@ -32,10 +32,10 @@ C_rot_aug   = [C_rot 0];
 D_rot_aug   = D_rot;
 
 % Designing the Q matrix
-q1_rot      = 1/200^2;
-q2_rot      = 1/50^2;
-q3_rot      = 1/10^2;
-q4_rot      = 1e-4;
+q1_rot      = 0.001;
+q2_rot      = 1;
+q3_rot      = 1;
+q4_rot      = 100;
 Q_rot_aug   = diag([q1_rot, q2_rot, q3_rot, q4_rot]);
 
 % Calculating our gains for our controller.
